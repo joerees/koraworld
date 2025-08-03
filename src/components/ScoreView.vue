@@ -18,7 +18,7 @@
 </template>
 
 <script setup lang="ts">
-import { useKoraStrings } from '@/composables/useKoraStrings.vue'
+import { useKoraStrings } from '@/composables/useKoraStrings'
 import { onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { Renderer, Stave, StaveNote, Formatter, Annotation, Voice } from 'vexflow'
 import { WrapAroundSlider } from '../js/WrapSlider'
@@ -37,7 +37,7 @@ const containerRef = ref<HTMLElement>()
 const stageRef = ref<HTMLElement>()
 const outputRef = ref<HTMLElement>()
 const scrollContainerRef = ref<HTMLElement | null>(null)
-const sheetRef = ref<HTMLElement | null>(null)
+const sheetRef = ref<HTMLDivElement | null>(null)
 const noteElements = ref<SVGElement[]>([])
 const closestTime = ref<number | null>()
 const slider = ref<WrapAroundSlider | null>(null)
@@ -138,7 +138,7 @@ function updateCurrentTimeFromScroll(emitSeek = false) {
 }
 
 // Improve the render function with error handling
-function renderTrebleStaff(container: HTMLElement, notes: typeof props.notes) {
+function renderTrebleStaff(container: HTMLDivElement, notes: typeof props.notes) {
   if (isRendering.value) return
 
   try {
@@ -213,7 +213,7 @@ function renderTrebleStaff(container: HTMLElement, notes: typeof props.notes) {
         trebleNotes.push(new StaveNote({ clef: 'treble', keys: ['b/4'], duration: 'qr' }))
       }
 
-      const voice = new Voice({ num_beats: 4, beat_value: 4 }).addTickables(trebleNotes)
+      const voice = new Voice({ numBeats: 4, beatValue: 4 }).addTickables(trebleNotes)
       new Formatter().joinVoices([voice]).format([voice], measureWidth - 20)
       voice.draw(context, trebleStave)
 
@@ -258,7 +258,7 @@ function renderTrebleStaff(container: HTMLElement, notes: typeof props.notes) {
 }
 
 // Debounce the rendering function
-const debouncedRender = debounce((container: HTMLElement, notes: typeof props.notes) => {
+const debouncedRender = debounce((container: HTMLDivElement, notes: typeof props.notes) => {
   renderTrebleStaff(container, notes)
 }, 300)
 

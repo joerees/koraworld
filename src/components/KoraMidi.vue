@@ -111,7 +111,7 @@ import PanelTextured from './PanelTextured.vue'
 import LiquidButton from './LiquidButton.vue'
 import KoraBridge from '@/components/KoraBridge.vue'
 import ScoreView from './ScoreView.vue'
-import { useKoraStrings, type KoraString } from '@/composables/useKoraStrings.vue'
+import { useKoraStrings, type KoraString } from '@/composables/useKoraStrings'
 
 const { koraStrings, info } = useKoraStrings()
 const currentTime = ref(0)
@@ -124,7 +124,11 @@ const started = ref(false)
 const isPlaying = ref(false)
 // const isPaused = ref(false)
 const scheduledIds: number[] = []
-let sampler = {}
+let sampler:Tone.Sampler
+
+
+
+
 const onStartApp = () => {
   started.value = true
   init()
@@ -192,16 +196,16 @@ const playNote = async (midiNote: number) => {
   }, 200)
 }
 
-const onSeek = (o) => {
+const onSeek = (o:number) => {
   console.log('onSeek', o)
 }
 
-const onDragStart = (o) => {
+const onDragStart = (o:number) => {
   stopPlayback()
   console.log('onDragStart :: stopPlayback', o)
 }
 
-const onDragEnd = (o) => {
+const onDragEnd = (o:number) => {
   // startPlayback(o)
   console.log('onDragEnd :: startPlayback', o)
 }

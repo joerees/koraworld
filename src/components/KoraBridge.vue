@@ -65,7 +65,7 @@
 </template>
 
 <script setup lang="ts">
-import { useKoraStrings } from '@/composables/useKoraStrings.vue'
+import { useKoraStrings } from '@/composables/useKoraStrings'
 const { koraStrings } = useKoraStrings()
 
 const koraTextElements = [

@@ -1,4 +1,3 @@
-<script lang="ts">
 export interface KoraString {
   note: string
   notes: string[]
@@ -194,4 +193,3 @@ export function useKoraStrings() {
 
   return { koraStrings, info };
 }
-</script>
