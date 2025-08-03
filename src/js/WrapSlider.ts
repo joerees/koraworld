@@ -114,6 +114,7 @@ export class WrapAroundSlider {
 
   private onTouchStart(event: TouchEvent): void {
     this.onMoveStart(event)
+    console.log('onTouchStart')
     this.container.addEventListener('touchmove', this.boundOnTouchMove, false)
   }
 

@@ -21,7 +21,7 @@
     </template>
 
     <template v-else>
-      <aside class="w-full md:w-80 max-h-screen p-4 sticky top-10 self-start">
+      <aside class="md:w-80 max-h-screen p-4 sticky top-10 self-start">
         <PanelTextured>
           <KoraBridge @play-note="playNote" />
           <template #citation>21 string Kora Bridge</template>
@@ -156,7 +156,11 @@ const selectedMidiFile = ref('');
 const currentFileName = ref('');
 
 const midiFiles = [
-  { value: 'yeyengo (1).mid', label: 'Yeyengo' },
+{ value: 'konkoba.mid', label: 'Konkoba' },
+{ value: 'alalake-1.mid', label: 'Alalake 1' }
+
+
+  /*{ value: 'yeyengo (1).mid', label: 'Yeyengo' },
   { value: 'alalake-1.mid', label: 'Alalake 1' },
   { value: 'alalake-2.mid', label: 'Alalake 2' },
   { value: 'alalake-3.mid', label: 'Alalake 3' },
@@ -167,7 +171,6 @@ const midiFiles = [
   { value: 'guilan.mid', label: 'Guilan' },
   { value: 'kaira.mid', label: 'Kaira' },
   { value: 'kele.mid', label: 'Kele' },
-  { value: 'konkoba.mid', label: 'Konkoba' },
   { value: 'miniyamba.mid', label: 'Miniyamba' },
   { value: 'nteriato.mid', label: 'Nteriato' },
   { value: 'rega.mid', label: 'Rega' },
@@ -175,7 +178,7 @@ const midiFiles = [
   { value: 'sutukung.mid', label: 'Sutukung' },
   { value: 'tabara.mid', label: 'Tabara' },
   { value: 'itoutou.mid', label: 'Itoutou' },
-  { value: 'toutou2.mid', label: 'Toutou 2' }
+  { value: 'toutou2.mid', label: 'Toutou 2' }*/
 ];
 
 const onStartApp = () => {
