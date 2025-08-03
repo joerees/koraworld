@@ -22,6 +22,7 @@ import { useKoraStrings } from '@/composables/useKoraStrings.vue'
 import { onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { Renderer, Stave, StaveNote, Formatter, Annotation, Voice } from 'vexflow'
 import { WrapAroundSlider } from '../js/WrapSlider'
+import { debounce } from 'lodash-es'
 
 const emit = defineEmits<{
   (e: 'update:currentNoteTime', value: number): void
@@ -32,8 +33,6 @@ const emit = defineEmits<{
 }>()
 
 const currentTime = ref(0)
-const { koraStrings } = useKoraStrings()
-
 const containerRef = ref<HTMLElement>()
 const stageRef = ref<HTMLElement>()
 const outputRef = ref<HTMLElement>()
@@ -42,6 +41,7 @@ const sheetRef = ref<HTMLElement | null>(null)
 const noteElements = ref<SVGElement[]>([])
 const closestTime = ref<number | null>()
 const slider = ref<WrapAroundSlider | null>(null)
+const { koraStrings } = useKoraStrings()
 
 const props = defineProps<{
   notes: Array<{
@@ -56,11 +56,13 @@ const props = defineProps<{
   totalDuration: number
 }>()
 
+const isRendering = ref(false)
+const renderError = ref<string | null>(null)
+
 const onDragStart = (event: any) => {
   emit('onDragStart', event)
   emit('update:isDragging', true)
 }
-
 
 const onDragEnd = (event: any) => {
   updateCurrentTimeFromScroll(true) // Trigger 'seek'
@@ -135,103 +137,136 @@ function updateCurrentTimeFromScroll(emitSeek = false) {
   }
 }
 
+// Improve the render function with error handling
 function renderTrebleStaff(container: HTMLElement, notes: typeof props.notes) {
-  container.innerHTML = ''
-  noteElements.value = []
+  if (isRendering.value) return
 
-  const renderer = new Renderer(container, Renderer.Backends.SVG)
-  const measureWidth = 200
-  const groupsPerMeasure = 4
+  try {
+    isRendering.value = true
+    renderError.value = null
 
-  const timeGroups = new Map<number, typeof props.notes>()
-  for (const note of notes) {
-    const group = timeGroups.get(note.time) || []
-    group.push(note)
-    timeGroups.set(note.time, group)
+    container.innerHTML = ''
+    noteElements.value = []
+
+    if (!notes.length) {
+      container.innerHTML = '<div class="text-center p-8">No notes to display</div>'
+      return
+    }
+
+    // Add a maximum notes limit for performance
+    const maxNotes = 1000
+    const notesToRender = notes.slice(0, maxNotes)
+
+    if (notes.length > maxNotes) {
+      console.warn(`Limiting display to ${maxNotes} notes for performance`)
+    }
+
+    const renderer = new Renderer(container, Renderer.Backends.SVG)
+    const measureWidth = 200
+    const groupsPerMeasure = 4
+
+    const timeGroups = new Map<number, typeof props.notes>()
+    for (const note of notesToRender) {
+      const group = timeGroups.get(note.time) || []
+      group.push(note)
+      timeGroups.set(note.time, group)
+    }
+
+    const groupedNotes = Array.from(timeGroups.entries())
+      .sort(([a], [b]) => a - b)
+      .map(([time, group]) => ({ time, group }))
+
+    const staveCount = Math.ceil(groupedNotes.length / groupsPerMeasure)
+    const totalWidth = staveCount * measureWidth + 20
+
+    renderer.resize(totalWidth, 250)
+    const context = renderer.getContext()
+
+    for (let i = 0; i < staveCount; i++) {
+      const xPos = 10 + i * measureWidth
+      const trebleStave = new Stave(xPos, 40, measureWidth)
+      if (i === 0) trebleStave.addClef('treble')
+      trebleStave.setContext(context).draw()
+
+      const slice = groupedNotes.slice(i * groupsPerMeasure, (i + 1) * groupsPerMeasure)
+      const trebleNotes: StaveNote[] = []
+
+      for (const { time, group } of slice) {
+        const keys = group.map((n) => toVexflowKey(n.name))
+        const staveNote = new StaveNote({
+          clef: 'treble',
+          keys,
+          duration: 'q',
+        })
+
+        group.forEach((note, idx) => {
+          const annotation = new Annotation(`${note.name}: ${time.toFixed(0)}`)
+            .setFont('Arial', 10)
+            .setVerticalJustification(Annotation.VerticalJustify.BOTTOM)
+          staveNote.addModifier(annotation, idx)
+        })
+
+        trebleNotes.push(staveNote)
+      }
+
+      while (trebleNotes.length < groupsPerMeasure) {
+        trebleNotes.push(new StaveNote({ clef: 'treble', keys: ['b/4'], duration: 'qr' }))
+      }
+
+      const voice = new Voice({ num_beats: 4, beat_value: 4 }).addTickables(trebleNotes)
+      new Formatter().joinVoices([voice]).format([voice], measureWidth - 20)
+      voice.draw(context, trebleStave)
+
+      const svgNotes = container.querySelectorAll('g.vf-stavenote')
+      for (let j = 0; j < slice.length; j++) {
+        const noteEl = svgNotes[svgNotes.length - slice.length + j] as SVGElement
+        const time = slice[j].time
+        noteEl.setAttribute('data-time', String(time))
+        noteElements.value.push(noteEl)
+
+        const notesInGroup = slice[j].group
+        notesInGroup.forEach((note, idx) => {
+          const entry = Object.values(koraStrings).find((s) => s.midi === note.midi)
+          const color = entry?.side === 0 ? '#3a6a7b' : '#b3472f'
+
+          const noteheadPaths = noteEl.querySelectorAll('.vf-notehead')
+          if (noteheadPaths[idx]) {
+            const path = noteheadPaths[idx] as SVGElement
+            path.setAttribute('fill', color)
+            path.setAttribute('data-base-color', color)
+          }
+
+          const annotations = noteEl.querySelectorAll('.vf-annotation text')
+          if (annotations[idx]) {
+            const text = annotations[idx] as SVGElement
+            text.setAttribute('fill', color)
+            text.setAttribute('data-base-color', color)
+          }
+        })
+      }
+    }
+
+    highlightNote(props.currentNoteTime)
+
+  } catch (error) {
+    console.error('Error rendering score:', error)
+    renderError.value = 'Failed to render musical score'
+    container.innerHTML = `<div class="text-red-500 p-8">Error: ${renderError.value}</div>`
+  } finally {
+    isRendering.value = false
   }
-
-  const groupedNotes = Array.from(timeGroups.entries())
-    .sort(([a], [b]) => a - b)
-    .map(([time, group]) => ({ time, group }))
-
-  const staveCount = Math.ceil(groupedNotes.length / groupsPerMeasure)
-  const totalWidth = staveCount * measureWidth + 20
-
-  renderer.resize(totalWidth, 250)
-  const context = renderer.getContext()
-
-  for (let i = 0; i < staveCount; i++) {
-    const xPos = 10 + i * measureWidth
-    const trebleStave = new Stave(xPos, 40, measureWidth)
-    if (i === 0) trebleStave.addClef('treble')
-    trebleStave.setContext(context).draw()
-
-    const slice = groupedNotes.slice(i * groupsPerMeasure, (i + 1) * groupsPerMeasure)
-    const trebleNotes: StaveNote[] = []
-
-    for (const { time, group } of slice) {
-      const keys = group.map((n) => toVexflowKey(n.name))
-      const staveNote = new StaveNote({
-        clef: 'treble',
-        keys,
-        duration: 'q',
-      })
-
-      group.forEach((note, idx) => {
-        const annotation = new Annotation(`${note.name}: ${time.toFixed(0)}`)
-          .setFont('Arial', 10)
-          .setVerticalJustification(Annotation.VerticalJustify.BOTTOM)
-        staveNote.addModifier(annotation, idx)
-      })
-
-      trebleNotes.push(staveNote)
-    }
-
-    while (trebleNotes.length < groupsPerMeasure) {
-      trebleNotes.push(new StaveNote({ clef: 'treble', keys: ['b/4'], duration: 'qr' }))
-    }
-
-    const voice = new Voice({ num_beats: 4, beat_value: 4 }).addTickables(trebleNotes)
-    new Formatter().joinVoices([voice]).format([voice], measureWidth - 20)
-    voice.draw(context, trebleStave)
-
-    const svgNotes = container.querySelectorAll('g.vf-stavenote')
-    for (let j = 0; j < slice.length; j++) {
-      const noteEl = svgNotes[svgNotes.length - slice.length + j] as SVGElement
-      const time = slice[j].time
-      noteEl.setAttribute('data-time', String(time))
-      noteElements.value.push(noteEl)
-
-      const notesInGroup = slice[j].group
-      notesInGroup.forEach((note, idx) => {
-        const entry = Object.values(koraStrings).find((s) => s.midi === note.midi)
-        const color = entry?.side === 0 ? '#3a6a7b' : '#b3472f'
-
-        const noteheadPaths = noteEl.querySelectorAll('.vf-notehead')
-        if (noteheadPaths[idx]) {
-          const path = noteheadPaths[idx] as SVGElement
-          path.setAttribute('fill', color)
-          path.setAttribute('data-base-color', color)
-        }
-
-        const annotations = noteEl.querySelectorAll('.vf-annotation text')
-        if (annotations[idx]) {
-          const text = annotations[idx] as SVGElement
-          text.setAttribute('fill', color)
-          text.setAttribute('data-base-color', color)
-        }
-      })
-    }
-  }
-
-  highlightNote(props.currentNoteTime)
 }
+
+// Debounce the rendering function
+const debouncedRender = debounce((container: HTMLElement, notes: typeof props.notes) => {
+  renderTrebleStaff(container, notes)
+}, 300)
 
 watch(
   () => props.notes,
   (newNotes) => {
     if (sheetRef.value) {
-      renderTrebleStaff(sheetRef.value, newNotes)
+      debouncedRender(sheetRef.value, newNotes)
     }
   },
   { immediate: true },
@@ -292,7 +327,6 @@ onBeforeUnmount(() => {
 </script>
 
 <style scoped>
-
 .highlighted {
   stroke: black;
   transform: scale(2);
@@ -311,15 +345,13 @@ onBeforeUnmount(() => {
   padding-right: 50%;
 }
 
-
 .canvas-container {
-    width: 100%;
+  width: 100%;
   height: 300px;
   position: relative;
   border: 2px solid #333;
   border-radius: 8px;
   overflow: hidden;
-
   background: linear-gradient(to bottom, #fef3dc, #f7e6b4);
   border-radius: 16px;
   border: 2px solid #5b3924;
@@ -341,7 +373,7 @@ onBeforeUnmount(() => {
   pointer-events: none;
   width: 100%;
   height: 100%;
-  top:0;
+  top: 0;
   left: 0;
 }
 

@@ -17,6 +17,7 @@
     "@tonejs/midi": "^2.0.28",
     "gsap": "^3.13.0",
     "interactjs": "^1.10.27",
+    "lodash-es": "^4.17.21",
     "lodash.debounce": "^4.0.8",
     "pinia": "^3.0.1",
     "tailwindcss-animate": "^1.0.7",
