@@ -100,8 +100,8 @@
                 <span
                   class="ml-auto text-sm text-muted-foreground tabular-nums"
                 >
-                  {{ currentTime }} : {{ currentNoteTime }} /
-                  {{ totalDuration }}
+                {{ formatSecondsToTime(currentNoteTime||0) }} : {{  formatSecondsToTime(totalDuration) }}
+       
                 </span>
               </div>
             </div>
@@ -214,7 +214,7 @@ const noteMap = computed(() => {
 
 const isDragging = ref(false);
 watch(isDragging, (val) => {
-  console.log("Dragging state changed:", val);
+ //  console.log("Dragging state changed:", val);
 });
 
 watch(currentNoteTime, (newTime) => {
@@ -250,16 +250,15 @@ const playNote = async (midiNote: number) => {
 };
 
 const onSeek = (o: number) => {
-  console.log("onSeek", o);
+  //console.log("onSeek", o);
 };
 
 const onDragStart = (o: number) => {
   stopPlayback();
-  console.log("onDragStart :: stopPlayback", o);
 };
 
 const onDragEnd = (o: number) => {
-  console.log("onDragEnd :: startPlayback", o);
+  // console.log("onDragEnd :: startPlayback", o);
 };
 
 // Handle MIDI file selection from dropdown
@@ -387,4 +386,12 @@ function stopPlayback() {
   currentNoteTime.value = null;
   isPlaying.value = false;
 }
+
+function formatSecondsToTime(seconds: number): string {
+  const minutes = Math.floor(seconds / 60)
+  const secs = Math.floor(seconds % 60)
+  const millis = Math.round((seconds % 1) * 1000)
+  return `${minutes}:${secs.toString().padStart(2, '0')}.${millis.toString().padStart(2, '0')}`
+}
+
 </script>

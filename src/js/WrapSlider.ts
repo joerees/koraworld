@@ -18,7 +18,7 @@ export class WrapAroundSlider {
 
   private offset: number = 40
   private deceleration: number = 0.95
-  private sensitivity: number = 0.02
+  private sensitivity: number = 0.2
   private damping: number = 0.02
 
   private containerWidth: number = 0
@@ -94,7 +94,7 @@ export class WrapAroundSlider {
     } else {
       this.container.addEventListener('mousedown', this.boundOnMouseDown, false)
       this.container.addEventListener('mouseup', this.boundOnMouseUp, false)
-      this.container.addEventListener('mouseout', this.boundOnMouseUp, false)
+      // this.container.addEventListener('mouseout', this.boundOnMouseUp, false)
       this.container.addEventListener('wheel', this.boundOnWheel, { passive: false })  // Added wheel listener
     }
   }
@@ -131,12 +131,11 @@ export class WrapAroundSlider {
 
   private onMouseDown(event: MouseEvent): void {
     this.onMoveStart(event)
-    this.container.addEventListener('mousemove', this.boundOnMouseMove, false)
+   
   }
 
   private onMouseUp(event: MouseEvent): void {
     this.onMoveEnd(event)
-    this.container.removeEventListener('mousemove', this.boundOnMouseMove)
   }
 
   private onMouseMove(event: MouseEvent): void {
@@ -145,7 +144,7 @@ export class WrapAroundSlider {
 
   private onMoveStart(event: TouchEvent | MouseEvent): void {
     event.preventDefault()
-
+    this.container.addEventListener('mousemove', this.boundOnMouseMove, false)
 
 
     this.containerWidth = this.container.offsetWidth
@@ -166,6 +165,8 @@ export class WrapAroundSlider {
     if (this.dragging && this.onDragEnd) {
       this.onDragEnd()
     }
+    this.container.removeEventListener('mousemove', this.boundOnMouseMove)
+
   this.dragging = false
     // requestAnimationFrame(this.boundUpdate)
   }
