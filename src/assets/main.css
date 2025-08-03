@@ -1,0 +1,65 @@
+@import './base.css';
+
+#app {
+  max-width: 100%;
+  margin: 0 auto;
+  padding: 0rem;
+  font-weight: normal;
+  background-image: url('@/assets/sky2.jpg');
+  background-size: cover;
+    background-attachment: fixed;
+
+
+    color: var(--color-text-heading);
+}
+
+a{
+  text-decoration: none;
+  color: rgb(252 241 191);
+  transition: 0.4s;
+  padding: 3px;
+  cursor: pointer;
+}
+
+@media (hover: hover) {
+  a:hover {
+   color: hsla(68, 92%, 10%, 0.8);
+  }
+}
+
+.button-earthy {
+  background: #442a10;
+  color: #ffe66d;
+  padding: 12px 24px;
+  border: 2px solid #ffe66d;
+  border-radius: 12px;
+  font-weight: bold;
+  font-family: 'Ubuntu', sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.2s ease,
+    background 0.2s ease,
+    color 0.2s ease;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.35);
+}
+
+/* 🖱️ Hover: button lifts slightly */
+.button-earthy:hover {
+  background: #ffe66d;
+  color: #442a10;
+  transform: scale(1.02);
+  box-shadow: 0 6px 14px rgba(255, 230, 109, 0.4);
+}
+
+/* 👇 Active (pressed): button presses down */
+.button-earthy:active {
+  transform: scale(0.97);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+h1, h2, h3, h4 {
+  color: var(--color-text-heading);
+}

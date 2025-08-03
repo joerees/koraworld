@@ -1,0 +1,211 @@
+@import 'tailwindcss';
+
+@layer theme, base, components, utilities;
+
+/* Tailwind 4 Theme Configuration */
+@layer theme {
+  :root {
+    --font-family-sans:
+      ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
+      'Segoe UI Symbol', 'Noto Color Emoji';
+
+    --color-background: oklch(96% 0.02 45);
+    --color-foreground: oklch(15% 0.03 30);
+
+    --color-note-blue: #3a6a7b;
+    --color-note-red: #b3472f;
+    --color-kora-strings: #a0571f;
+
+    --color-text-heading: #f5dfb7;
+    --color-text: #f5dfb7;
+
+    --color-card: oklch(98% 0.01 48);
+    --color-card-foreground: oklch(15% 0.03 30);
+
+    --color-popover: oklch(98% 0.01 48);
+    --color-popover-foreground: oklch(15% 0.03 30);
+
+    --color-primary: oklch(55% 0.15 15);
+    --color-primary-foreground: oklch(98% 0.01 48);
+    --color-primary-glow: oklch(70% 0.15 15);
+
+    --color-secondary: oklch(88% 0.05 45);
+    --color-secondary-foreground: oklch(25% 0.03 30);
+
+    --color-muted: oklch(92% 0.02 45);
+    --color-muted-foreground: oklch(55% 0.02 30);
+
+    --color-accent: oklch(45% 0.08 120);
+    --color-accent-foreground: oklch(98% 0.01 48);
+    --color-accent-glow: oklch(60% 0.08 120);
+
+    --color-destructive: oklch(60% 0.15 0);
+    --color-destructive-foreground: oklch(98% 0.01 48);
+
+    --color-border: oklch(85% 0.03 45);
+    --color-input: oklch(85% 0.03 45);
+    --color-ring: oklch(55% 0.15 15);
+
+    --color-sidebar-background: oklch(98% 0.01 0);
+    --color-sidebar-foreground: oklch(26% 0.01 240);
+    --color-sidebar-primary: oklch(10% 0.01 240);
+    --color-sidebar-primary-foreground: oklch(98% 0.01 0);
+    --color-sidebar-accent: oklch(96% 0.01 240);
+    --color-sidebar-accent-foreground: oklch(10% 0.01 240);
+    --color-sidebar-border: oklch(91% 0.02 220);
+    --color-sidebar-ring: oklch(60% 0.25 217);
+
+    --radius: 0.5rem;
+
+    --shadow-elegant: 0 10px 30px -10px color-mix(in srgb, var(--color-primary) 30%, transparent);
+    --shadow-glow: 0 0 40px color-mix(in srgb, var(--color-accent-glow) 40%, transparent);
+    --shadow-kora: 0 8px 25px -8px color-mix(in srgb, oklch(50% 0.08 30) 30%, transparent);
+
+    --gradient-primary: linear-gradient(135deg, var(--color-primary), var(--color-primary-glow));
+    --gradient-accent: linear-gradient(135deg, var(--color-accent), var(--color-accent-glow));
+    --gradient-subtle: linear-gradient(180deg, var(--color-background), var(--color-muted));
+    --gradient-kora: linear-gradient(45deg, oklch(80% 0.08 30), oklch(75% 0.08 45));
+  }
+}
+
+@media (prefers-color-scheme: dark) {
+  @layer theme {
+    :root {
+      --color-background: oklch(8% 0.02 240);
+      --color-foreground: oklch(92% 0.02 245);
+
+      --color-card: oklch(12% 0.02 240);
+      --color-card-foreground: oklch(92% 0.02 245);
+
+      --color-popover: oklch(12% 0.02 240);
+      --color-popover-foreground: oklch(92% 0.02 245);
+
+      --color-primary: oklch(65% 0.15 261);
+      --color-primary-foreground: oklch(100% 0 0);
+      --color-primary-glow: oklch(80% 0.15 261);
+
+      --color-secondary: oklch(18% 0.02 240);
+      --color-secondary-foreground: oklch(88% 0.02 245);
+
+      --color-muted: oklch(15% 0.01 240);
+      --color-muted-foreground: oklch(65% 0.01 240);
+
+      --color-accent: oklch(76% 0.15 43);
+      --color-accent-foreground: oklch(8% 0.02 240);
+      --color-accent-glow: oklch(90% 0.15 43);
+
+      --color-destructive: oklch(60% 0.15 0);
+      --color-destructive-foreground: oklch(100% 0 0);
+
+      --color-border: oklch(22% 0.01 240);
+      --color-input: oklch(22% 0.01 240);
+      --color-ring: oklch(65% 0.15 261);
+
+      --color-sidebar-background: oklch(10% 0.01 240);
+      --color-sidebar-foreground: oklch(96% 0.01 240);
+      --color-sidebar-primary: oklch(48% 0.15 224);
+      --color-sidebar-primary-foreground: oklch(100% 0 0);
+      --color-sidebar-accent: oklch(16% 0.01 240);
+      --color-sidebar-accent-foreground: oklch(96% 0.01 240);
+      --color-sidebar-border: oklch(16% 0.01 240);
+      --color-sidebar-ring: oklch(60% 0.25 217);
+
+      --shadow-elegant: 0 10px 30px -10px color-mix(in srgb, var(--color-primary) 40%, transparent);
+      --shadow-glow: 0 0 40px color-mix(in srgb, var(--color-accent-glow) 20%, transparent);
+    }
+  }
+}
+
+@layer utilities {
+   /* Small padding utility */
+  .padding-sm {
+    padding: 1.3rem 1rem 1rem 1rem; /* default (base) */
+  }
+
+  @media (min-width: 640px) {
+    .padding-sm {
+      padding: 0.75rem;
+    }
+  }
+
+  @media (min-width: 768px) {
+    .padding-sm {
+      padding: 1rem;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .padding-sm {
+      padding: 1.25rem;
+    }
+  }
+
+  @media (min-width: 1280px) {
+    .padding-sm {
+      padding: 1.5rem;
+    }
+  }
+
+  /* Extra small padding utility */
+  .padding-xs {
+   padding: 0.6rem;
+  }
+
+
+
+  @media (min-width: 768px) {
+    .padding-xs {
+      padding: 0.625rem;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .padding-xs {
+      padding: 0.75rem;
+    }
+  }
+
+  @media (min-width: 1280px) {
+    .padding-xs {
+      padding: 1rem;
+    }
+  }
+
+  .padding-md {
+    padding: 1rem; /* default */
+  }
+
+  @media (min-width: 640px) {
+    .padding-md {
+      padding: 1.5rem;
+    }
+  }
+
+  @media (min-width: 768px) {
+    .padding-md {
+      padding: 2rem;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .padding-md {
+      padding: 3rem;
+    }
+  }
+
+  @media (min-width: 1280px) {
+    .padding-md {
+      padding: 4rem;
+    }
+  }
+
+  .max-width {
+    max-width: 1200px;
+  }
+  .bg-gradient {
+    background-image: var(--gradient-kora);
+  }
+  .bg-gradient-primary {
+    background-image: var(--gradient-primary);
+  }
+}
