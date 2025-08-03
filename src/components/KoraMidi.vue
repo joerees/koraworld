@@ -45,20 +45,34 @@
           </div>
           <template #citation>
             <div class="flex flex-col">
+              <!-- MIDI File Selection Dropdown -->
+              <div class="w-full flex flex-col py-2 mb-4">
+                <label class="block mb-2 text-sm font-medium">Select MIDI File:</label>
+                <select
+                  v-model="selectedMidiFile"
+                  @change="onMidiSelect"
+                  class="w-full rounded-xl bg-blue-500/20 hover:bg-white/10 text-white/90 px-4 py-2 text-sm font-medium transition-colors duration-200 shadow-md backdrop-blur-sm border border-white/20"
+                >
+                  <option value="">Choose from library...</option>
+                  <option v-for="file in midiFiles" :key="file.value" :value="file.value">
+                    {{ file.label }}
+                  </option>
+                </select>
+                <div v-if="currentFileName" class="mt-2 text-xs text-white/60">
+                  Currently loaded: {{ currentFileName }}
+                </div>
+              </div>
 
               <div class="w-full flex flex-col py-2">
-                    <label class="block"
-                      >Speed: {{ playbackSpeed.toFixed(2) }}x</label
-                    >
-                    <input
-                      type="range"
-                      min="0.01"
-                      max="1"
-                      step=".001"
-                      v-model.number="playbackSpeed"
-                    />
-                  </div>
-
+                <label class="block">Speed: {{ playbackSpeed.toFixed(2) }}x</label>
+                <input
+                  type="range"
+                  min="0.01"
+                  max="1"
+                  step=".001"
+                  v-model.number="playbackSpeed"
+                />
+              </div>
 
               <div class="flex flex-row">
                 <div class="flex flex-row items-start gap-2">
@@ -66,7 +80,7 @@
                     for="midi-upload"
                     class="cursor-pointer inline-block rounded-xl bg-blue-500/40 hover:bg-white/20 text-white/90 px-4 py-2 text-sm font-medium transition-colors duration-200 shadow-md backdrop-blur-sm"
                   >
-                    Select MIDI
+                    Upload MIDI
                   </label>
                   <input
                     id="midi-upload"
@@ -81,7 +95,6 @@
                     >Play</LiquidButton
                   >
                   <LiquidButton @click="stopPlayback">Pause</LiquidButton>
-                 
                 </div>
 
                 <span
@@ -94,7 +107,6 @@
             </div>
           </template>
         </PanelTextured>
-
 
         <LiquidPanel>
           <template #heading>Kora Music Player</template>
@@ -136,9 +148,35 @@ const playbackSpeed = ref(1);
 
 const started = ref(false);
 const isPlaying = ref(false);
-// const isPaused = ref(false)
 const scheduledIds: number[] = [];
 let sampler: Tone.Sampler;
+
+// MIDI file selection
+const selectedMidiFile = ref('');
+const currentFileName = ref('');
+
+const midiFiles = [
+  { value: 'yeyengo (1).mid', label: 'Yeyengo' },
+  { value: 'alalake-1.mid', label: 'Alalake 1' },
+  { value: 'alalake-2.mid', label: 'Alalake 2' },
+  { value: 'alalake-3.mid', label: 'Alalake 3' },
+  { value: 'alalake.mid', label: 'Alalake' },
+  { value: 'bakotema.mid', label: 'Bakotema' },
+  { value: 'balankul.mid', label: 'Balankul' },
+  { value: 'bambaboj.mid', label: 'Bambaboj' },
+  { value: 'guilan.mid', label: 'Guilan' },
+  { value: 'kaira.mid', label: 'Kaira' },
+  { value: 'kele.mid', label: 'Kele' },
+  { value: 'konkoba.mid', label: 'Konkoba' },
+  { value: 'miniyamba.mid', label: 'Miniyamba' },
+  { value: 'nteriato.mid', label: 'Nteriato' },
+  { value: 'rega.mid', label: 'Rega' },
+  { value: 'isabunima.mid', label: 'Isabunima' },
+  { value: 'sutukung.mid', label: 'Sutukung' },
+  { value: 'tabara.mid', label: 'Tabara' },
+  { value: 'itoutou.mid', label: 'Itoutou' },
+  { value: 'toutou2.mid', label: 'Toutou 2' }
+];
 
 const onStartApp = () => {
   started.value = true;
@@ -193,7 +231,7 @@ watch(playbackSpeed, (newSpeed) => {
 });
 
 const playNote = async (midiNote: number) => {
-  await Tone.start(); // Ensure audio context is started
+  await Tone.start();
   const matching = Object.values(koraStrings).find(
     (s: KoraString) => s.midi === midiNote
   );
@@ -206,7 +244,6 @@ const playNote = async (midiNote: number) => {
   const noteName = matching.note + matching.info.slice(-1);
   sampler.triggerAttackRelease(noteName, "4n");
   matching.on = true;
-  // Optional: turn the string off visually after a short duration
   setTimeout(() => {
     matching.on = false;
   }, 200);
@@ -222,9 +259,47 @@ const onDragStart = (o: number) => {
 };
 
 const onDragEnd = (o: number) => {
-  // startPlayback(o)
   console.log("onDragEnd :: startPlayback", o);
 };
+
+// Handle MIDI file selection from dropdown
+async function onMidiSelect() {
+  if (!selectedMidiFile.value) return;
+
+  try {
+    const response = await fetch(`/midi/${selectedMidiFile.value}`);
+    if (!response.ok) {
+      throw new Error(`Failed to load MIDI file: ${response.statusText}`);
+    }
+    
+    const arrayBuffer = await response.arrayBuffer();
+    const midi = new Midi(arrayBuffer);
+
+    noteData.value = midi.tracks.flatMap((track) =>
+      track.notes.map((note) => ({
+        time: note.time,
+        duration: note.duration,
+        midi: note.midi,
+        name: note.name,
+        info: info(note.midi)?.info,
+      })),
+    );
+
+    const last = noteData.value.at(-1);
+    totalDuration.value = last ? last.time + last.duration : 0;
+
+    const selectedFile = midiFiles.find(f => f.value === selectedMidiFile.value);
+    currentFileName.value = selectedFile ? selectedFile.label : selectedMidiFile.value;
+
+    stopPlayback();
+    currentNoteTime.value = 0;
+    
+    console.log(`Loaded MIDI file: ${currentFileName.value}`);
+  } catch (error) {
+    console.error('Error loading MIDI file:', error);
+    alert(`Failed to load MIDI file: ${error.message}`);
+  }
+}
 
 async function onMidiUpload(event: Event) {
   const file = (event.target as HTMLInputElement).files?.[0];
@@ -245,6 +320,10 @@ async function onMidiUpload(event: Event) {
 
   const last = noteData.value.at(-1);
   totalDuration.value = last ? last.time + last.duration : 0;
+
+  // Update filename and clear dropdown selection
+  currentFileName.value = file.name;
+  selectedMidiFile.value = '';
 
   stopPlayback();
   currentNoteTime.value = 0;
