@@ -5,7 +5,7 @@ import LiquidPanel from '../components/LiquidPanel.vue'
 <template>
   <main>
     <div class="p-4">
-      <LiquidPanel class="bg-[url(/koras.jpg)] bg-cover">
+      <LiquidPanel class="bg-[url(/koras.jpg)]! bg-cover!">
         <section class="w-full h-[60vh] flex flex-col items-center justify-center ">
           <h1 class="text-5xl md:text-7xl lg:text-[8vw] font-extrabold tracking-tight text-center">
             Kora World

@@ -1,6 +1,15 @@
 <template>
   <div class="kora-panel">
-    <slot />
+
+
+    <div v-if="$slots.default" class="panel-default">
+        <slot />
+      </div>
+
+      <footer v-if="$slots.citation" class="panel-citation">
+        <slot name="citation" />
+      </footer>
+
   </div>
 </template>
 

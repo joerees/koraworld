@@ -1,6 +1,5 @@
 <template>
-  <div class="my-8 max-w-full">
-
+  <div class="kora-bridge">
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 181.58 300">
       <g id="Layer_2" data-name="Layer 2">
         <g id="Direction" transform="translate(12 0) scale(0.9)">
@@ -9,53 +8,46 @@
               :cx="el.x"
               :cy="el.y - 5"
               r="20"
-              class="hover-circle"
+              class="string-trigger"
               @mouseenter="setNote(koraStrings[el.id].midi, true)"
             />
             <g :transform="`translate(${el.x} ${el.y})`">
               <text
-                stroke-width="1"
-                paint-order="stroke"
                 text-anchor="middle"
-                class="cls-1"
-                :class="{ isOn: koraStrings[el.id].on }"
+                class="string-label"
+                :class="{ active: koraStrings[el.id].on }"
               >
                 {{ koraStrings[el.id].notes[selectedKey] }}
               </text>
             </g>
           </g>
 
-          <line class="cls-2" x1="42.79" y1="30.97" x2="25.36" y2="30.97" />
-          <line class="cls-2" x1="42.79" y1="56.87" x2="25.36" y2="56.87" />
-          <line class="cls-2" x1="42.79" y1="82.77" x2="25.36" y2="82.77" />
-          <line class="cls-2" x1="42.79" y1="108.68" x2="25.36" y2="108.68" />
-          <line class="cls-2" x1="42.79" y1="134.58" x2="25.36" y2="134.58" />
-          <line class="cls-2" x1="42.79" y1="160.49" x2="25.36" y2="160.49" />
-          <line class="cls-2" x1="42.79" y1="186.39" x2="25.36" y2="186.39" />
-          <line class="cls-2" x1="42.79" y1="212.3" x2="25.36" y2="212.3" />
-          <line class="cls-2" x1="42.79" y1="238.2" x2="25.36" y2="238.2" />
-          <line class="cls-2" x1="42.79" y1="264.11" x2="25.36" y2="264.11" />
-          <line class="cls-2" x1="42.79" y1="290.01" x2="25.36" y2="290.01" />
-          <line class="cls-3" x1="133.53" y1="82.77" x2="47.79" y2="30.97" />
-          <line class="cls-3" x1="133.53" y1="108.68" x2="47.79" y2="56.87" />
-          <line class="cls-3" x1="133.53" y1="134.58" x2="47.79" y2="82.77" />
-          <line class="cls-3" x1="133.53" y1="160.49" x2="47.79" y2="108.68" />
-          <line class="cls-3" x1="133.53" y1="186.39" x2="47.79" y2="134.58" />
-          <line class="cls-3" x1="133.53" y1="212.3" x2="47.79" y2="160.49" />
-          <line class="cls-3" x1="133.53" y1="238.2" x2="47.79" y2="186.39" />
-          <line class="cls-3" x1="133.53" y1="264.11" x2="47.79" y2="212.3" />
-          <line class="cls-2" x1="155.95" y1="30.97" x2="138.53" y2="30.97" />
-          <line class="cls-2" x1="155.95" y1="56.87" x2="138.53" y2="56.87" />
-          <line class="cls-2" x1="155.95" y1="82.77" x2="138.53" y2="82.77" />
-          <line class="cls-2" x1="155.95" y1="108.68" x2="138.53" y2="108.68" />
-          <line class="cls-2" x1="155.95" y1="134.58" x2="138.53" y2="134.58" />
-          <line class="cls-2" x1="155.95" y1="160.49" x2="138.53" y2="160.49" />
-          <line class="cls-2" x1="155.95" y1="186.39" x2="138.53" y2="186.39" />
-          <line class="cls-2" x1="155.95" y1="212.3" x2="138.53" y2="212.3" />
-          <line class="cls-2" x1="155.95" y1="238.2" x2="138.53" y2="238.2" />
-          <line class="cls-2" x1="155.95" y1="264.11" x2="138.53" y2="264.11" />
+          <!-- String lines - simplified -->
+          <g class="string-lines">
+            <line v-for="i in 11" :key="`left-${i}`" 
+                  class="string" 
+                  :x1="42.79" 
+                  :y1="30.97 + (i-1) * 25.9" 
+                  :x2="25.36" 
+                  :y2="30.97 + (i-1) * 25.9" />
+            
+            <line v-for="i in 8" :key="`diagonal-${i}`" 
+                  class="string diagonal" 
+                  :x1="133.53" 
+                  :y1="82.77 + (i-1) * 25.9" 
+                  :x2="47.79" 
+                  :y2="30.97 + (i-1) * 25.9" />
+            
+            <line v-for="i in 10" :key="`right-${i}`" 
+                  class="string" 
+                  :x1="155.95" 
+                  :y1="30.97 + (i-1) * 25.9" 
+                  :x2="138.53" 
+                  :y2="30.97 + (i-1) * 25.9" />
+          </g>
+
           <polygon
-            class="cls-2 bridge__outline"
+            class="bridge-outline"
             points="25.36 1.5 25.36 310.28 75.9 310.28 87.9 334.31 93.22 334.31 105.22 310.28 155.95 310.28 155.95 1.5 25.36 1.5"
           />
         </g>
@@ -103,88 +95,54 @@ const setNote = (note: number, isOn: boolean) => {
 }
 </script>
 
-<style>
-.scroll-container {
-  overflow-x: auto;
-  white-space: nowrap;
-  width: 100%;
+<style scoped>
+.kora-bridge {
+  margin: 2rem 0;
+  max-width: 100%;
 }
 
-.bridge__scene {
-  min-width: 200px;
-  width: 100%;
-  height: 500px;
-  margin: auto;
-  perspective: 800px;
-  perspective-origin: center;
-}
-.bridge {
-  min-width: 200px;
-  width: 100%;
-  margin: auto;
-  transform: rotateX(60deg) translate3d(0px, 190px, -10px);
-}
-.notes {
-  position: fixed;
-  right: 20px;
-  top: 100px;
-  height: calc(100vh - 100px);
-  overflow: scroll;
-}
-
-.hover-circle {
-  fill: rgba(0, 0, 0, 0);
-  transition: all 0.2s;
-  pointer-events: all;
-  cursor: pointer;
-  stroke: transparent;
-  transform-origin: center;
-}
-.hover-circle:hover {
+.string-trigger {
   fill: transparent;
-  stroke: rgba(255, 239, 209, 0.5);
-  
+  cursor: pointer;
+  transition: all 0.2s ease;
 }
 
-.cls-1 {
+.string-trigger:hover {
+  stroke: rgba(255, 239, 209, 0.5);
+  stroke-width: 2;
+}
+
+.string-label {
   font-size: 14px;
   fill: #ffe66d;
-  stroke: none;
+ 
   font-family:
     ChalkboardSE-Regular,
-    Chalkboard SE;
-  transition: all 2s;
-  stroke: transparent;
+    Chalkboard SE;  transition: all 0.3s ease;
   pointer-events: none;
-  transform-origin: center;
-  transform-box: fill-box;
-  transform-origin: center;
 }
 
-.cls-1.isOn {
-  transition: all 0s;
+.string-label.active {
   fill: #ff0000;
-  stroke: #ff0000;
   transform: scale(1.8);
-  pointer-events: none;
+  transition-duration: 0.1s;
 }
 
-.cls-2,
-.cls-3 {
+.string {
   fill: none;
-  stroke-miterlimit: 10;
-}
-.cls-2 {
   stroke: var(--color-kora-strings);
   stroke-width: 3px;
+  stroke-miterlimit: 10;
 }
-.cls-3 {
-  stroke: var(--color-kora-strings);
+
+.string.diagonal {
+  stroke-width: 1px;
 }
-.bridge__outline {
-filter: drop-shadow(0px 4px 4px #060606);
+
+.bridge-outline {
   fill: rgba(0, 0, 0, 0.1);
-
-
+  stroke: var(--color-kora-strings);
+  stroke-width: 2px;
+  filter: drop-shadow(0px 4px 4px #060606);
 }
 </style>

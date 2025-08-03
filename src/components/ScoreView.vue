@@ -1,19 +1,14 @@
 <template>
-  <div class="relative">
-    <div class="canvas-container">
-      <div
-        class="absolute top-0 left-1/2 w-[2px] h-full shadow bg-red-500/20 z-10 pointer-events-none"
-      ></div>
-      <div ref="stageRef" class="stage">
-        <div ref="containerRef" class="wide-canvas">
-          <div class="canvas-section">
-            <div ref="sheetRef" class="sheet-wrapper"></div>
-          </div>
+  <div class="score-container">
+    <div class="playhead"></div>
+    <div ref="stageRef" class="stage">
+      <div ref="containerRef" class="canvas-wrapper">
+        <div class="canvas-section">
+          <div ref="sheetRef" class="sheet-wrapper"></div>
         </div>
       </div>
-
-      <div ref="outputRef" class="position-display">0%</div>
     </div>
+    <div ref="outputRef" class="position-display">0%</div>
   </div>
 </template>
 
@@ -58,6 +53,41 @@ const props = defineProps<{
 
 const isRendering = ref(false)
 const renderError = ref<string | null>(null)
+
+onMounted(() => {
+  if (containerRef.value && stageRef.value) {
+    slider.value = new WrapAroundSlider(
+      containerRef.value,
+      stageRef.value,
+      {
+        deceleration: 0.95,
+        sensitivity: 0.05,
+        outputElement: outputRef.value || null,
+      },
+      () => {
+        debouncedUpdateCurrentTimeFromScroll()
+      }, // onUpdateScrollOffset not needed
+      () => {
+        onDragStart(null)
+      },
+      () => {
+        onDragEnd(null)
+      },
+    )
+  }
+
+  if (scrollContainerRef.value) {
+    scrollContainerRef.value.addEventListener('scroll', () => {
+      updateCurrentTimeFromScroll()
+    })
+  }
+})
+
+onBeforeUnmount(() => {
+  if (slider.value) {
+    // slider.value.destroy();
+  }
+})
 
 const onDragStart = (event: any) => {
   emit('onDragStart', event)
@@ -289,81 +319,22 @@ watch(
 const debouncedUpdateCurrentTimeFromScroll = () => {
   updateCurrentTimeFromScroll(false)
 }
-
-onMounted(() => {
-  if (containerRef.value && stageRef.value) {
-    slider.value = new WrapAroundSlider(
-      containerRef.value,
-      stageRef.value,
-      {
-        deceleration: 0.95,
-        sensitivity: 0.05,
-        outputElement: outputRef.value || null,
-      },
-      () => {
-        debouncedUpdateCurrentTimeFromScroll()
-      }, // onUpdateScrollOffset not needed
-      () => {
-        onDragStart(null)
-      },
-      () => {
-        onDragEnd(null)
-      },
-    )
-  }
-
-  if (scrollContainerRef.value) {
-    scrollContainerRef.value.addEventListener('scroll', () => {
-      updateCurrentTimeFromScroll()
-    })
-  }
-})
-
-onBeforeUnmount(() => {
-  if (slider.value) {
-    // slider.value.destroy();
-  }
-})
 </script>
 
 <style scoped>
-.highlighted {
-  stroke: black;
-  transform: scale(2);
-}
-
-:deep(svg) {
-  position: relative;
-  top: 0;
-  left: 0;
-  filter: drop-shadow(2px 2px 1px rgba(0, 0, 0, 0.25));
-}
-
-.sheet-wrapper {
-  display: inline-block;
-  padding-left: 50%;
-  padding-right: 50%;
-}
-
-.canvas-container {
+.score-container {
   width: 100%;
   height: 300px;
   position: relative;
-  border: 2px solid #333;
-  border-radius: 8px;
-  overflow: hidden;
-  background: linear-gradient(to bottom, #fef3dc, #f7e6b4);
   border-radius: 16px;
   border: 2px solid #5b3924;
-  padding: 24px 0 24px 0;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
-  color: #2c1a0d;
-  font-family: 'Georgia', serif;
-  position: relative;
+  padding: 24px 0;
+  box-shadow: var(--shadow-kora);
+  background: linear-gradient(to bottom, #fef3dc, #f7e6b4);
   overflow: hidden;
 }
 
-.canvas-container::before {
+.score-container::before {
   content: "";
   position: absolute;
   inset: 0;
@@ -371,10 +342,18 @@ onBeforeUnmount(() => {
   background-size: cover;
   opacity: 0.7;
   pointer-events: none;
-  width: 100%;
-  height: 100%;
+}
+
+.playhead {
+  position: absolute;
   top: 0;
-  left: 0;
+  left: 50%;
+  width: 2px;
+  height: 100%;
+  background: rgba(255, 0, 0, 0.6);
+  z-index: 10;
+  pointer-events: none;
+  transform: translateX(-50%);
 }
 
 .stage {
@@ -382,12 +361,10 @@ onBeforeUnmount(() => {
   height: 100%;
   position: relative;
   overflow: hidden;
-  background: transparent;
 }
 
-.wide-canvas {
+.canvas-wrapper {
   height: 100%;
-  width: auto;
   display: flex;
   align-items: center;
 }
@@ -396,14 +373,15 @@ onBeforeUnmount(() => {
   min-width: 400px;
   height: 300px;
   margin: 0 20px;
-  border-radius: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 24px;
-  font-weight: bold;
-  color: #333;
   flex-shrink: 0;
+}
+
+.sheet-wrapper {
+  display: inline-block;
+  padding: 0 50%;
 }
 
 .position-display {
@@ -412,9 +390,18 @@ onBeforeUnmount(() => {
   right: 20px;
   background: rgba(0, 0, 0, 0.8);
   color: white;
-  padding: 10px 15px;
+  padding: 8px 12px;
   border-radius: 6px;
   font-weight: bold;
-  font-size: 18px;
+  font-size: 14px;
+}
+
+.highlighted {
+  transform: scale(1.2);
+  transition: transform 0.2s ease;
+}
+
+:deep(svg) {
+  filter: drop-shadow(2px 2px 1px rgba(0, 0, 0, 0.25));
 }
 </style>

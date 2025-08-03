@@ -1,23 +1,22 @@
 <template>
-  <div class="flex flex-col md:flex-row  max-w-5xl m-auto w-full relative ">
-
+  <div class="flex flex-col md:flex-row max-w-5xl m-auto w-full relative">
     <template v-if="!started">
       <main class="w-full self-center">
-            <section class="w-full flex flex-col items-center justify-center">
-              <h1
-                class="text-5xl md:text-7xl lg:text-[8vw] font-extrabold tracking-tight text-center"
-              >
-                Kora World
-              </h1>
-              <p class="block font-extrabold tracking-tight text-center">
-                Part of the Music notes platform
-              </p>
-              <p class="mt-3 block text-center">
-
-
-                <button class="button-earthy" @click="onStartApp">Start Music Player</button>
-              </p>
-            </section>
+        <section class="w-full flex flex-col items-center justify-center">
+          <h1
+            class="text-5xl md:text-7xl lg:text-[8vw] font-extrabold tracking-tight text-center"
+          >
+            Kora World
+          </h1>
+          <p class="block font-extrabold tracking-tight text-center">
+            Part of the Music notes platform
+          </p>
+          <p class="mt-3 block text-center">
+            <button class="button-earthy mt-8" @click="onStartApp">
+              Start Music Player
+            </button>
+          </p>
+        </section>
       </main>
     </template>
 
@@ -30,9 +29,8 @@
       </aside>
 
       <main class="p-4 overflow-auto max-w-full w-full flex-grow order-2">
-      <PanelTextured class="sticky">
+        <PanelTextured class="sticky mb-8">
           <div class="mt-4 relative">
-
             <ScoreView
               v-model:isDragging="isDragging"
               :notes="noteData"
@@ -46,54 +44,70 @@
             />
           </div>
           <template #citation>
-            <span class="text-sm text-muted-foreground tabular-nums">
-              {{ currentTime }} : {{ currentNoteTime }} / {{ totalDuration }}
-            </span>
-          </template>
-      </PanelTextured>
+            <div class="flex flex-col">
 
-        <LiquidPanel>
-          <template #heading>Upload a file</template>
-          <template #subheading>supports .midi</template>
-          <template #body>
-            <div class="flex flex-row items-start gap-2">
-              <label
-                for="midi-upload"
-                class="cursor-pointer inline-block rounded-xl bg-blue-500/40 hover:bg-white/20 text-white/90 px-4 py-2 text-sm font-medium transition-colors duration-200 shadow-md backdrop-blur-sm"
-              >
-                Select MIDI
-              </label>
-              <input
-                id="midi-upload"
-                type="file"
-                accept=".mid,.midi"
-                class="hidden"
-                @change="onMidiUpload"
-              />
-              <LiquidButton class="mr-2" @click="startPlayback(currentNoteTime ?? 0)"
-                >Play</LiquidButton
-              >
-              <LiquidButton @click="stopPlayback">Pause</LiquidButton>
-              <div>
-                <label class="block">Speed: {{ playbackSpeed.toFixed(2) }}x</label>
-                <input type="range" min="0.1" max="1" step=".01" v-model.number="playbackSpeed" />
+              <div class="w-full flex flex-col py-2">
+                    <label class="block"
+                      >Speed: {{ playbackSpeed.toFixed(2) }}x</label
+                    >
+                    <input
+                      type="range"
+                      min="0.01"
+                      max="1"
+                      step=".001"
+                      v-model.number="playbackSpeed"
+                    />
+                  </div>
+
+
+              <div class="flex flex-row">
+                <div class="flex flex-row items-start gap-2">
+                  <label
+                    for="midi-upload"
+                    class="cursor-pointer inline-block rounded-xl bg-blue-500/40 hover:bg-white/20 text-white/90 px-4 py-2 text-sm font-medium transition-colors duration-200 shadow-md backdrop-blur-sm"
+                  >
+                    Select MIDI
+                  </label>
+                  <input
+                    id="midi-upload"
+                    type="file"
+                    accept=".mid,.midi"
+                    class="hidden"
+                    @change="onMidiUpload"
+                  />
+                  <LiquidButton
+                    class="mr-2"
+                    @click="startPlayback(currentNoteTime ?? 0)"
+                    >Play</LiquidButton
+                  >
+                  <LiquidButton @click="stopPlayback">Pause</LiquidButton>
+                 
+                </div>
+
+                <span
+                  class="ml-auto text-sm text-muted-foreground tabular-nums"
+                >
+                  {{ currentTime }} : {{ currentNoteTime }} /
+                  {{ totalDuration }}
+                </span>
               </div>
             </div>
           </template>
-          <template #citation>Not playing</template>
-        </LiquidPanel>
+        </PanelTextured>
+
 
         <LiquidPanel>
           <template #heading>Kora Music Player</template>
           <template #subheading>Learn to play</template>
           <template #body>
-            Learn to play the kora by reading sheet music and visual aids to indicate the string to
-            be played by highlighting its position on the Kora Bridge.
+            Learn to play the kora by reading sheet music and visual aids to
+            indicate the string to be played by highlighting its position on the
+            Kora Bridge.
           </template>
           <template #citation>Music, 2025</template>
         </LiquidPanel>
         <div class="absolute p-4 w-8 h-8">
-          <GlassCard >X</GlassCard>
+          <GlassCard>X</GlassCard>
         </div>
       </main>
     </template>
@@ -101,121 +115,123 @@
 </template>
 
 <script setup lang="ts">
-import * as Tone from 'tone'
-import { Midi } from '@tonejs/midi'
-import { computed, ref, watch } from 'vue'
+import * as Tone from "tone";
+import { Midi } from "@tonejs/midi";
+import { computed, ref, watch } from "vue";
 
-import GlassCard from '././GlassCard.vue'
-import LiquidPanel from './LiquidPanel.vue'
-import PanelTextured from './PanelTextured.vue'
-import LiquidButton from './LiquidButton.vue'
-import KoraBridge from '@/components/KoraBridge.vue'
-import ScoreView from './ScoreView.vue'
-import { useKoraStrings, type KoraString } from '@/composables/useKoraStrings'
+import GlassCard from "././GlassCard.vue";
+import LiquidPanel from "./LiquidPanel.vue";
+import PanelTextured from "./PanelTextured.vue";
+import LiquidButton from "./LiquidButton.vue";
+import KoraBridge from "@/components/KoraBridge.vue";
+import ScoreView from "./ScoreView.vue";
+import { useKoraStrings, type KoraString } from "@/composables/useKoraStrings";
 
-const { koraStrings, info } = useKoraStrings()
-const currentTime = ref(0)
-const noteData = ref<any[]>([])
-const currentNoteTime = ref<number | null>(null)
-const totalDuration = ref(0)
-const playbackSpeed = ref(1)
+const { koraStrings, info } = useKoraStrings();
+const currentTime = ref(0);
+const noteData = ref<any[]>([]);
+const currentNoteTime = ref<number | null>(null);
+const totalDuration = ref(0);
+const playbackSpeed = ref(1);
 
-const started = ref(false)
-const isPlaying = ref(false)
+const started = ref(false);
+const isPlaying = ref(false);
 // const isPaused = ref(false)
-const scheduledIds: number[] = []
-let sampler:Tone.Sampler
-
-
-
+const scheduledIds: number[] = [];
+let sampler: Tone.Sampler;
 
 const onStartApp = () => {
-  started.value = true
-  init()
-}
+  started.value = true;
+  init();
+};
 
 const init = () => {
   sampler = new Tone.Sampler({
     urls: {
-      C4: 'F1.mp3',
-      D4: 'A3.mp3',
-      E4: 'A3.mp3',
+      C4: "F1.mp3",
+      D4: "A3.mp3",
+      E4: "A3.mp3",
     },
-    baseUrl: '/mp3/',
-    onload: () => console.log('Sampler loaded'),
-  }).toDestination()
-}
+    baseUrl: "/mp3/",
+    onload: () => console.log("Sampler loaded"),
+  }).toDestination();
+};
 
 const noteMap = computed(() => {
-  const map = new Map<number, Array<{ midi: number; name: string; duration: number }>>()
+  const map = new Map<
+    number,
+    Array<{ midi: number; name: string; duration: number }>
+  >();
   noteData.value.forEach((note) => {
-    const existing = map.get(note.time) || []
+    const existing = map.get(note.time) || [];
     existing.push({
       midi: note.midi,
       name: note.name,
       duration: note.duration,
-    })
-    map.set(note.time, existing)
-  })
-  return map
-})
+    });
+    map.set(note.time, existing);
+  });
+  return map;
+});
 
-const isDragging = ref(false)
+const isDragging = ref(false);
 watch(isDragging, (val) => {
-  console.log('Dragging state changed:', val)
-})
+  console.log("Dragging state changed:", val);
+});
 
 watch(currentNoteTime, (newTime) => {
-  if (!newTime || isPlaying.value) return
-  const notes = noteMap.value.get(newTime) || []
-  notes.forEach((n) => playNote(n.midi))
-})
+  if (!newTime || isPlaying.value) return;
+  const notes = noteMap.value.get(newTime) || [];
+  notes.forEach((n) => playNote(n.midi));
+});
 
 watch(playbackSpeed, (newSpeed) => {
-  Tone.getTransport().bpm.value = newSpeed
-  const lastNote = noteData.value.at(-1)
-  const midiEndTime = lastNote ? lastNote.time + lastNote.duration : 0
-  totalDuration.value = Tone.Time(midiEndTime).toSeconds()
-})
+  Tone.getTransport().bpm.value = newSpeed;
+  const lastNote = noteData.value.at(-1);
+  const midiEndTime = lastNote ? lastNote.time + lastNote.duration : 0;
+  totalDuration.value = Tone.Time(midiEndTime).toSeconds();
+});
 
 const playNote = async (midiNote: number) => {
-  await Tone.start() // Ensure audio context is started
-  const matching = Object.values(koraStrings).find((s: KoraString) => s.midi === midiNote)
+  await Tone.start(); // Ensure audio context is started
+  const matching = Object.values(koraStrings).find(
+    (s: KoraString) => s.midi === midiNote
+  );
 
   if (!matching) {
-    console.warn('No matching string for MIDI note:', midiNote)
-    return
+    console.warn("No matching string for MIDI note:", midiNote);
+    return;
   }
 
-  const noteName = matching.note + matching.info.slice(-1)
-  sampler.triggerAttackRelease(noteName, '4n')
-  matching.on = true
+  const noteName = matching.note + matching.info.slice(-1);
+  sampler.triggerAttackRelease(noteName, "4n");
+  matching.on = true;
   // Optional: turn the string off visually after a short duration
   setTimeout(() => {
-    matching.on = false
-  }, 200)
-}
+    matching.on = false;
+  }, 200);
+};
 
-const onSeek = (o:number) => {
-  console.log('onSeek', o)
-}
+const onSeek = (o: number) => {
+  console.log("onSeek", o);
+};
 
-const onDragStart = (o:number) => {
-  stopPlayback()
-  console.log('onDragStart :: stopPlayback', o)
-}
+const onDragStart = (o: number) => {
+  stopPlayback();
+  console.log("onDragStart :: stopPlayback", o);
+};
 
-const onDragEnd = (o:number) => {
+const onDragEnd = (o: number) => {
   // startPlayback(o)
-  console.log('onDragEnd :: startPlayback', o)
-}
+  console.log("onDragEnd :: startPlayback", o);
+};
 
 async function onMidiUpload(event: Event) {
-  const file = (event.target as HTMLInputElement).files?.[0]
-  if (!file) return
+  const file = (event.target as HTMLInputElement).files?.[0];
+  if (!file) return;
 
-  const arrayBuffer = await file.arrayBuffer()
-  const midi = new Midi(arrayBuffer)
+  const arrayBuffer = await file.arrayBuffer();
+  const midi = new Midi(arrayBuffer);
 
   noteData.value = midi.tracks.flatMap((track) =>
     track.notes.map((note) => ({
@@ -224,70 +240,72 @@ async function onMidiUpload(event: Event) {
       midi: note.midi,
       name: note.name,
       info: info(note.midi)?.info,
-    })),
-  )
+    }))
+  );
 
-  const last = noteData.value.at(-1)
-  totalDuration.value = last ? last.time + last.duration : 0
+  const last = noteData.value.at(-1);
+  totalDuration.value = last ? last.time + last.duration : 0;
 
-  stopPlayback()
-  currentNoteTime.value = 0
+  stopPlayback();
+  currentNoteTime.value = 0;
 }
 
 async function startPlayback(fromTime = 0) {
-  await Tone.start()
-  stopPlayback()
+  await Tone.start();
+  stopPlayback();
 
-  Tone.getTransport().bpm.value = playbackSpeed.value
-  Tone.getTransport().seconds = fromTime
+  Tone.getTransport().bpm.value = playbackSpeed.value;
+  Tone.getTransport().seconds = fromTime;
 
-  Object.values(koraStrings).forEach((str) => (str.on = false))
-  scheduledIds.length = 0
+  Object.values(koraStrings).forEach((str) => (str.on = false));
+  scheduledIds.length = 0;
 
   noteData.value.forEach((note) => {
-    if (note.time < fromTime) return
+    if (note.time < fromTime) return;
 
-    const matching = Object.values(koraStrings).find((s: KoraString) => s.midi === note.midi)
-    if (!matching) return
+    const matching = Object.values(koraStrings).find(
+      (s: KoraString) => s.midi === note.midi
+    );
+    if (!matching) return;
 
-    const noteName = matching.note + matching.info.slice(-1)
-
-    Tone.getTransport().schedule((time) => {
-      sampler.triggerAttackRelease(noteName, note.duration, time)
-    }, note.time)
+    const noteName = matching.note + matching.info.slice(-1);
 
     Tone.getTransport().schedule((time) => {
-      Tone.Draw.schedule(() => {
-        matching.on = true
-        currentNoteTime.value = note.time
-      }, time)
-    }, note.time)
+      sampler.triggerAttackRelease(noteName, note.duration, time);
+    }, note.time);
 
     Tone.getTransport().schedule((time) => {
       Tone.Draw.schedule(() => {
-        matching.on = false
-      }, time)
-    }, note.time + 0.2)
-  })
+        matching.on = true;
+        currentNoteTime.value = note.time;
+      }, time);
+    }, note.time);
 
-  const last = noteData.value.at(-1)?.time ?? 0
+    Tone.getTransport().schedule((time) => {
+      Tone.Draw.schedule(() => {
+        matching.on = false;
+      }, time);
+    }, note.time + 0.2);
+  });
+
+  const last = noteData.value.at(-1)?.time ?? 0;
   Tone.getTransport().schedule((time) => {
     Tone.Draw.schedule(() => {
-      Object.values(koraStrings).forEach((s) => (s.on = false))
-      currentNoteTime.value = null
-    }, time)
-  }, last + 1)
+      Object.values(koraStrings).forEach((s) => (s.on = false));
+      currentNoteTime.value = null;
+    }, time);
+  }, last + 1);
 
-  isPlaying.value = true
-  Tone.getTransport().start()
+  isPlaying.value = true;
+  Tone.getTransport().start();
 }
 
 function stopPlayback() {
-  Tone.getTransport().stop()
-  Tone.getTransport().cancel()
-  sampler.releaseAll()
-  Object.values(koraStrings).forEach((s) => (s.on = false))
-  currentNoteTime.value = null
-  isPlaying.value = false
+  Tone.getTransport().stop();
+  Tone.getTransport().cancel();
+  sampler.releaseAll();
+  Object.values(koraStrings).forEach((s) => (s.on = false));
+  currentNoteTime.value = null;
+  isPlaying.value = false;
 }
 </script>
