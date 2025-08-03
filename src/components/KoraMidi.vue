@@ -293,10 +293,13 @@ async function onMidiSelect() {
     stopPlayback();
     currentNoteTime.value = 0;
     
-    console.log(`Loaded MIDI file: ${currentFileName.value}`);
+    // console.log(`Loaded MIDI file: ${currentFileName.value}`);
   } catch (error) {
     console.error('Error loading MIDI file:', error);
-    alert(`Failed to load MIDI file: ${error.message}`);
+    if (error instanceof Error) {
+
+      alert(`Failed to load MIDI file: ${error.message}`);
+    }
   }
 }
 
